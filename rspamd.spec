@@ -1,5 +1,5 @@
 Name:             rspamd
-Version:          2.5
+Version:          2.6
 Release:          1%{?dist}
 Summary:          Rapid spam filtering system
 License:          ASL 2.0 and LGPLv3 and BSD and MIT and CC0 and zlib
@@ -10,7 +10,6 @@ Source2:          rspamd.service
 Source3:          rspamd.logrotate
 Source4:          rspamd.sysusers
 Patch0:           rspamd-secure-ssl-ciphers.patch
-Patch1:           rspamd-fix-replxx-compile.patch
 
 BuildRequires:    cmake
 BuildRequires:    file-devel
@@ -59,7 +58,7 @@ Provides: bundled(kann)
 # lc-btrie: BSD-3-Clause
 Provides: bundled(lc-btrie)
 # libev: BSD-2-Clause
-Provides: bundled(libev)
+Provides: bundled(libev) = 4.33
 # libottery: CC0
 Provides: bundled(libottery)
 # librdns: BSD-2-Clause
@@ -134,13 +133,13 @@ rm -rf freebsd
   -DENABLE_PCRE2=ON \
   -DRSPAMD_USER=%{name} \
   -DRSPAMD_GROUP=%{name}
-%make_build
+%cmake_build
 
 %pre
 %sysusers_create_package %{name} %{SOURCE4}
 
 %install
-%{make_install} DESTDIR=%{buildroot} INSTALLDIRS=vendor
+%cmake_install
 # The tests install some files we don't want so ship
 rm -f %{buildroot}%{_libdir}/debug/usr/bin/rspam*
 install -Ddpm 0755 %{buildroot}%{_sysconfdir}/%{name}/{local,override}.d/
@@ -178,6 +177,9 @@ install -Dpm 0644 LICENSE.md %{buildroot}%{_docdir}/licenses/LICENSE.md
 %dir %{_datadir}/%{name}/lualib/{lua_content,lua_ffi,lua_magic,lua_scanners,lua_selectors,rspamadm}
 %{_datadir}/%{name}/lualib/{lua_content,lua_ffi,lua_magic,lua_scanners,lua_selectors,rspamadm}/*.lua
 
+%dir %{_datadir}/%{name}/rules/controller
+%{_datadir}/%{name}/rules/controller/*.lua
+
 %dir %{_datadir}/%{name}/rules/regexp
 %{_datadir}/%{name}/rules/regexp/*.lua
 
@@ -202,6 +204,11 @@ install -Dpm 0644 LICENSE.md %{buildroot}%{_docdir}/licenses/LICENSE.md
 %{_sysusersdir}/%{name}.conf
 
 %changelog
+* Thu Oct 29 2020 Felix Kaechele <felix@kaechele.ca> - 2.6-1
+- update to 2.6
+- drop replxx patch, upstreamed
+- use %%cmake_build and %%cmake_install macro
+
 * Sat Apr 25 2020 Johan Kok <johan@fedoraproject.org> - 2.5-1
 - Update to 2.5
 
